@@ -1,0 +1,6 @@
+{
+  "name": "BI Intel",
+  "description": "An enterprise-grade ML-based Predictive Business Intelligence platform. Upload datasets, clean raw data, train real regression and classification models, and generate strategic business recommendations using Gemini AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

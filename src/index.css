@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --bg: #EEF1F6;
+  --surface: #FFFFFF;
+  --panel2: #F3F1EA;
+  --line: #DCE1EA;
+  --text: #10141F;
+  --text-muted: #5B6478;
+  --coral: #FF5F45;
+  --teal: #0FA3A3;
+  --amber: #B45309;
+}
+
+.dark {
+  --bg: #0B0E17;
+  --surface: #141A29;
+  --panel2: #1D263B;
+  --line: #2D3954;
+  --text: #F3F4F6;
+  --text-muted: #9CA3AF;
+  --coral: #FF6F59;
+  --teal: #2DD4BF;
+  --amber: #F59E0B;
+}
+
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-serif: "Fraunces", Georgia, serif;
+  
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-panel2: var(--panel2);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-coral: var(--coral);
+  --color-teal: var(--teal);
+  --color-amber: var(--amber);
+}
+
