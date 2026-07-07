@@ -1088,7 +1088,7 @@ export default function LandingPage({
       <footer className="border-t border-line/60 py-8 text-xs text-text-muted transition-colors duration-200">
         <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <span className="font-medium text-text">BI Intel — Predictive Analytics Engine</span>
-          <span className="font-mono text-[10px] uppercase">Engineered dynamically with Gemini advisory</span>
+          <span className="font-mono text-[10px] uppercase">Engineered dynamically with BI Intel</span>
         </div>
       </footer>
     </div>
