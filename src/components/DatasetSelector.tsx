@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { motion } from 'motion/react';
 import { Dataset, ColumnMetadata, ColumnType } from '../types';
 import { defaultDatasets } from '../data/datasets';
 import { Database, Upload, CheckCircle, FileSpreadsheet, Layers, Info, Search, X } from 'lucide-react';
@@ -176,10 +177,40 @@ export default function DatasetSelector({ selectedDataset, onDatasetSelect }: Da
     );
   });
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+        delayChildren: 0.05
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] }
+    }
+  };
+
   return (
-    <div className="space-y-6" id="dataset-selector-root">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6" 
+      id="dataset-selector-root"
+    >
       {/* Search and Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-surface border border-line rounded-2xl p-4 shadow-xs" id="dataset-search-bar">
+      <motion.div 
+        variants={itemVariants}
+        className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-surface border border-line rounded-2xl p-4 shadow-xs" 
+        id="dataset-search-bar"
+      >
         <div className="relative w-full sm:max-w-md">
           <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
             <Search className="w-4 h-4 text-text-muted" />
@@ -210,11 +241,15 @@ export default function DatasetSelector({ selectedDataset, onDatasetSelect }: Da
           </span>
           <span>of {defaultDatasets.length} available</span>
         </div>
-      </div>
+      </motion.div>
 
       {/* Selection Cards Grid */}
       {filteredDatasets.length === 0 ? (
-        <div className="bg-surface border border-line rounded-2xl p-8 text-center" id="empty-search-state">
+        <motion.div 
+          variants={itemVariants}
+          className="bg-surface border border-line rounded-2xl p-8 text-center" 
+          id="empty-search-state"
+        >
           <Database className="w-10 h-10 text-text-muted mx-auto mb-3 opacity-60" />
           <h4 className="font-sans font-medium text-text text-base mb-1">No datasets matched "{searchQuery}"</h4>
           <p className="text-text-muted text-xs max-w-md mx-auto mb-4 leading-relaxed">
@@ -227,20 +262,21 @@ export default function DatasetSelector({ selectedDataset, onDatasetSelect }: Da
           >
             Clear Search Filter
           </button>
-        </div>
+        </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {filteredDatasets.map((ds) => {
             const isSelected = selectedDataset?.id === ds.id;
             return (
-              <div
+              <motion.div
                 key={ds.id}
                 id={`dataset-card-${ds.id}`}
                 onClick={() => handleSelectDefault(ds)}
-                className={`p-5 rounded-2xl border transition-all duration-200 cursor-pointer ${
+                whileHover={{ y: -3, borderColor: isSelected ? "var(--coral)" : "rgba(91, 100, 120, 0.45)" }}
+                className={`p-5 rounded-2xl border transition-colors duration-200 cursor-pointer ${
                   isSelected
-                    ? 'bg-surface border-coral shadow-sm ring-1 ring-coral/30'
-                    : 'bg-surface border-line hover:border-text-muted/40 hover:-translate-y-0.5'
+                    ? 'bg-surface border-coral shadow-xs ring-1 ring-coral/30'
+                    : 'bg-surface border-line hover:shadow-sm'
                 }`}
               >
                 <div className="flex justify-between items-start mb-3">
@@ -265,21 +301,23 @@ export default function DatasetSelector({ selectedDataset, onDatasetSelect }: Da
                     <div className="text-sm font-mono font-medium text-text">{ds.columnCount}</div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       )}
 
       {/* CSV Drag & Drop Upload */}
-      <div
+      <motion.div
+        variants={itemVariants}
+        whileHover={{ scale: 1.005 }}
         id="csv-dropzone"
         onDragEnter={handleDrag}
         onDragOver={handleDrag}
         onDragLeave={handleDrag}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200 ${
+        className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-colors duration-200 ${
           dragActive
             ? 'border-coral bg-coral/5'
             : 'border-line hover:border-text-muted/40 hover:bg-surface bg-panel2/30'
@@ -304,11 +342,15 @@ export default function DatasetSelector({ selectedDataset, onDatasetSelect }: Da
             {uploadError}
           </p>
         )}
-      </div>
+      </motion.div>
 
       {/* Active Dataset Overview & Table Preview */}
       {selectedDataset && (
-        <div className="bg-surface border border-line rounded-2xl p-6 space-y-6" id="dataset-preview-panel">
+        <motion.div 
+          variants={itemVariants}
+          className="bg-surface border border-line rounded-2xl p-6 space-y-6" 
+          id="dataset-preview-panel"
+        >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-line">
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -342,7 +384,11 @@ export default function DatasetSelector({ selectedDataset, onDatasetSelect }: Da
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {selectedDataset.columns.map((col) => (
-                <div key={col.name} className="p-3.5 rounded-xl bg-panel2 border border-line/40 flex flex-col justify-between">
+                <motion.div 
+                  key={col.name} 
+                  whileHover={{ y: -2 }}
+                  className="p-3.5 rounded-xl bg-panel2 border border-line/40 flex flex-col justify-between transition-colors duration-200 hover:border-line/70"
+                >
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="font-mono font-medium text-xs text-text truncate max-w-[150px]" title={col.name}>
@@ -368,7 +414,7 @@ export default function DatasetSelector({ selectedDataset, onDatasetSelect }: Da
                     <span>MISSING: <span className={col.missingCount > 0 ? 'text-amber font-semibold' : 'text-text-muted'}>{col.missingCount}</span></span>
                     <span>DISTINCT: <span className="text-text font-semibold">{col.distinctValuesCount}</span></span>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -420,8 +466,8 @@ export default function DatasetSelector({ selectedDataset, onDatasetSelect }: Da
             <Info className="w-4 h-4 text-coral" />
             <span>Dataset has been successfully parsed. Review features and values, then proceed to the <strong>Data Cleaning</strong> stage to handle missing values and scale data.</span>
           </div>
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

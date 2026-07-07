@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { Dataset, ModelAlgorithm, ModelConfig, ModelEvaluation } from '../types';
 import { Settings, Play, Sliders, CheckSquare, Square, Info, Activity } from 'lucide-react';
 
@@ -128,21 +129,52 @@ export default function ModelTrainer({
   const trainCount = Math.floor(activeData.length * trainRatio);
   const testCount = activeData.length - trainCount;
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] }
+    }
+  };
+
   return (
-    <div className="space-y-6" id="model-trainer-root">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6" 
+      id="model-trainer-root"
+    >
       {/* Alert if training on raw uncleaned data */}
       {!cleanedData && (
-        <div className="bg-amber/5 border border-amber/15 p-4 rounded-xl text-xs text-amber flex items-start gap-2.5">
+        <motion.div 
+          variants={itemVariants}
+          className="bg-amber/5 border border-amber/15 p-4 rounded-xl text-xs text-amber flex items-start gap-2.5"
+        >
           <Info className="w-5 h-5 shrink-0 mt-0.5" />
           <p className="leading-relaxed">
             <strong>Notice:</strong> You are training on the raw, uncleaned dataset. Missing values are filled with zeros and outliers are unhandled. We highly recommend visiting the <strong>Data Cleaning</strong> stage first for higher predictive accuracy.
           </p>
-        </div>
+        </motion.div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Step 1: Algorithm & Config - 6 cols */}
-        <div className="lg:col-span-6 bg-surface border border-line rounded-2xl p-6 space-y-6">
+        <motion.div 
+          variants={itemVariants}
+          className="lg:col-span-6 bg-surface border border-line rounded-2xl p-6 space-y-6"
+        >
           <h3 className="font-sans font-semibold text-text text-lg pb-3 border-b border-line flex items-center gap-2">
             <Settings className="w-5 h-5 text-coral" />
             Algorithm & Targets
@@ -291,10 +323,13 @@ export default function ModelTrainer({
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Step 2: Features checklist & Split - 6 cols */}
-        <div className="lg:col-span-6 bg-surface border border-line rounded-2xl p-6 space-y-6 flex flex-col justify-between">
+        <motion.div 
+          variants={itemVariants}
+          className="lg:col-span-6 bg-surface border border-line rounded-2xl p-6 space-y-6 flex flex-col justify-between"
+        >
           <div className="space-y-6">
             <h3 className="font-sans font-semibold text-text text-lg pb-3 border-b border-line">
               Select Predictor Features (X)
@@ -308,10 +343,11 @@ export default function ModelTrainer({
                 .map((feat) => {
                   const isChecked = selectedFeatures.includes(feat);
                   return (
-                    <div
+                    <motion.div
                       key={feat}
                       onClick={() => handleToggleFeature(feat)}
-                      className={`p-3 rounded-xl border flex items-center gap-3 cursor-pointer transition-all ${
+                      whileHover={{ scale: 1.01 }}
+                      className={`p-3 rounded-xl border flex items-center gap-3 cursor-pointer transition-colors duration-200 ${
                         isChecked
                           ? 'bg-surface border-coral/65 shadow-xs'
                           : 'bg-panel2/60 border-line/40 text-text-muted hover:border-text-muted/20'
@@ -325,7 +361,7 @@ export default function ModelTrainer({
                       <span className="font-mono text-xs text-text font-medium truncate" title={feat}>
                         {feat}
                       </span>
-                    </div>
+                    </motion.div>
                   );
                 })}
             </div>
@@ -386,8 +422,8 @@ export default function ModelTrainer({
               </p>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

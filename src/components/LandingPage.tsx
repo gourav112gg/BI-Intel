@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import { defaultDatasets } from '../data/datasets';
 import {
   TrendingUp,
   Database,
@@ -232,6 +233,11 @@ export default function LandingPage({
     }
   };
 
+  // Calculate Margin of Error dynamically: MOE = 1.96 * SE = 1.96 * sqrt(p*(1-p) / N)
+  // Assuming maximum variability (p = 0.5): MOE = 1.96 * 0.5 / sqrt(N) = 0.98 / sqrt(N)
+  const totalSamples = defaultDatasets?.reduce((sum, ds) => sum + (ds.rawData?.length || 0), 0) || 0;
+  const calculatedErrorMargin = totalSamples > 0 ? (0.98 / Math.sqrt(totalSamples)) * 100 : 6.2;
+
   // Animation Variants
   const fadeInUp = {
     hidden: { opacity: 0, y: 35 },
@@ -399,20 +405,20 @@ export default function LandingPage({
               </motion.button>
             </div>
             
-            <div className="grid grid-cols-3 gap-6 pt-6 border-t border-line/50">
-              <motion.div whileHover={{ y: -2 }} className="transition-transform">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 pt-6 border-t border-line/50">
+              <motion.div whileHover={{ y: -2 }}>
                 <span className="block font-mono text-xl sm:text-2xl font-bold text-text">
-                  <AnimatedCounter value={6.2} decimals={1} prefix="±" suffix="%" glowColor="teal" />
+                  <AnimatedCounter value={calculatedErrorMargin} decimals={1} prefix="±" suffix="%" glowColor="teal" />
                 </span>
-                <span className="text-[11px] text-text-muted font-mono uppercase tracking-wider block mt-1">Error Margin</span>
+                <span className="text-[11px] text-text-muted font-mono uppercase tracking-wider block mt-1" title={`Calculated across ${totalSamples} samples in default datasets.`}>Error Margin</span>
               </motion.div>
-              <motion.div whileHover={{ y: -2 }} className="transition-transform">
+              <motion.div whileHover={{ y: -2 }}>
                 <span className="block font-mono text-xl sm:text-2xl font-bold text-text">
                   <AnimatedCounter value={5} prefix="" suffix="-Stage" glowColor="none" />
                 </span>
                 <span className="text-[11px] text-text-muted font-mono uppercase tracking-wider block mt-1">Data Pipeline</span>
               </motion.div>
-              <motion.div whileHover={{ y: -2 }} className="transition-transform">
+              <motion.div whileHover={{ y: -2 }}>
                 <span className="block font-mono text-xl sm:text-2xl font-bold text-text">
                   <AnimatedCounter value={3} prefix="" suffix=" Family" glowColor="none" />
                 </span>
@@ -431,7 +437,7 @@ export default function LandingPage({
             <motion.div 
               whileHover={{ y: -4, scale: 1.01 }}
               transition={{ duration: 0.3 }}
-              className="bg-surface border border-line rounded-2xl p-6 shadow-xl relative overflow-hidden transition-all duration-300"
+              className="bg-surface border border-line rounded-2xl p-6 shadow-xl relative overflow-hidden transition-shadow duration-300 hover:shadow-2xl"
             >
               <div className="flex justify-between items-start mb-6">
                 <div>
@@ -513,7 +519,7 @@ export default function LandingPage({
                 </svg>
               </div>
 
-              <div className="flex gap-4 pt-4 border-t border-line/40 font-mono text-[10px] text-text-muted justify-between">
+              <div className="flex flex-wrap sm:flex-nowrap gap-2 sm:gap-4 pt-4 border-t border-line/40 font-mono text-[10px] text-text-muted justify-between">
                 <span className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-coral inline-block" />
                   Forecast (median)
@@ -564,7 +570,7 @@ export default function LandingPage({
             <motion.div 
               variants={fadeInUp}
               whileHover={{ y: -6, borderColor: "var(--coral)" }}
-              className="border border-line/75 rounded-2xl p-6 space-y-4 bg-bg/40 transition-all duration-300"
+              className="border border-line/75 rounded-2xl p-6 space-y-4 bg-bg/40 transition-colors duration-200"
             >
               <span className="font-mono text-xs text-text-muted font-bold tracking-wider block">01</span>
               <h3 className="font-serif font-semibold text-lg text-text">Hindsight isn't a plan</h3>
@@ -576,7 +582,7 @@ export default function LandingPage({
             <motion.div 
               variants={fadeInUp}
               whileHover={{ y: -6, borderColor: "var(--coral)" }}
-              className="border border-line/75 rounded-2xl p-6 space-y-4 bg-bg/40 transition-all duration-300"
+              className="border border-line/75 rounded-2xl p-6 space-y-4 bg-bg/40 transition-colors duration-200"
             >
               <span className="font-mono text-xs text-text-muted font-bold tracking-wider block">02</span>
               <h3 className="font-serif font-semibold text-lg text-text">Point estimates hide risk</h3>
@@ -588,7 +594,7 @@ export default function LandingPage({
             <motion.div 
               variants={fadeInUp}
               whileHover={{ y: -6, borderColor: "var(--coral)" }}
-              className="border border-line/75 rounded-2xl p-6 space-y-4 bg-bg/40 transition-all duration-300"
+              className="border border-line/75 rounded-2xl p-6 space-y-4 bg-bg/40 transition-colors duration-200"
             >
               <span className="font-mono text-xs text-text-muted font-bold tracking-wider block">03</span>
               <h3 className="font-serif font-semibold text-lg text-text">Reports get skimmed</h3>
@@ -633,12 +639,12 @@ export default function LandingPage({
             <motion.div 
               variants={fadeInUp}
               whileHover={{ y: -5, scale: 1.01 }}
-              className="bg-surface border border-line rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all group duration-300"
+              className="bg-surface border border-line rounded-2xl p-6 flex flex-col justify-between transition-shadow hover:shadow-md group duration-300"
             >
               <div>
                 <motion.div 
                   whileHover={{ rotate: 10, scale: 1.05 }}
-                  className="w-10 h-10 rounded-xl bg-coral/10 border border-coral/15 flex items-center justify-center text-coral mb-4 transition-transform duration-200"
+                  className="w-10 h-10 rounded-xl bg-coral/10 border border-coral/15 flex items-center justify-center text-coral mb-4"
                 >
                   <Database className="w-5 h-5" />
                 </motion.div>
@@ -656,12 +662,12 @@ export default function LandingPage({
             <motion.div 
               variants={fadeInUp}
               whileHover={{ y: -5, scale: 1.01 }}
-              className="bg-surface border border-line rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all group duration-300"
+              className="bg-surface border border-line rounded-2xl p-6 flex flex-col justify-between transition-shadow hover:shadow-md group duration-300"
             >
               <div>
                 <motion.div 
                   whileHover={{ rotate: -10, scale: 1.05 }}
-                  className="w-10 h-10 rounded-xl bg-teal/10 border border-teal/15 flex items-center justify-center text-teal mb-4 transition-transform duration-200"
+                  className="w-10 h-10 rounded-xl bg-teal/10 border border-teal/15 flex items-center justify-center text-teal mb-4"
                 >
                   <Sparkles className="w-5 h-5" />
                 </motion.div>
@@ -679,12 +685,12 @@ export default function LandingPage({
             <motion.div 
               variants={fadeInUp}
               whileHover={{ y: -5, scale: 1.01 }}
-              className="bg-surface border border-line rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all group duration-300"
+              className="bg-surface border border-line rounded-2xl p-6 flex flex-col justify-between transition-shadow hover:shadow-md group duration-300"
             >
               <div>
                 <motion.div 
                   whileHover={{ rotate: 10, scale: 1.05 }}
-                  className="w-10 h-10 rounded-xl bg-coral/10 border border-coral/15 flex items-center justify-center text-coral mb-4 transition-transform duration-200"
+                  className="w-10 h-10 rounded-xl bg-coral/10 border border-coral/15 flex items-center justify-center text-coral mb-4"
                 >
                   <Play className="w-5 h-5" />
                 </motion.div>
@@ -702,12 +708,12 @@ export default function LandingPage({
             <motion.div 
               variants={fadeInUp}
               whileHover={{ y: -5, scale: 1.01 }}
-              className="bg-surface border border-line rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all group duration-300"
+              className="bg-surface border border-line rounded-2xl p-6 flex flex-col justify-between transition-shadow hover:shadow-md group duration-300"
             >
               <div>
                 <motion.div 
                   whileHover={{ rotate: -10, scale: 1.05 }}
-                  className="w-10 h-10 rounded-xl bg-teal/10 border border-teal/15 flex items-center justify-center text-teal mb-4 transition-transform duration-200"
+                  className="w-10 h-10 rounded-xl bg-teal/10 border border-teal/15 flex items-center justify-center text-teal mb-4"
                 >
                   <Brain className="w-5 h-5" />
                 </motion.div>
@@ -725,12 +731,12 @@ export default function LandingPage({
             <motion.div 
               variants={fadeInUp}
               whileHover={{ y: -5, scale: 1.01 }}
-              className="bg-surface border border-line rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all group duration-300"
+              className="bg-surface border border-line rounded-2xl p-6 flex flex-col justify-between transition-shadow hover:shadow-md group duration-300"
             >
               <div>
                 <motion.div 
                   whileHover={{ rotate: 10, scale: 1.05 }}
-                  className="w-10 h-10 rounded-xl bg-coral/10 border border-coral/15 flex items-center justify-center text-coral mb-4 transition-transform duration-200"
+                  className="w-10 h-10 rounded-xl bg-coral/10 border border-coral/15 flex items-center justify-center text-coral mb-4"
                 >
                   <LineChart className="w-5 h-5" />
                 </motion.div>
@@ -748,12 +754,12 @@ export default function LandingPage({
             <motion.div 
               variants={fadeInUp}
               whileHover={{ y: -5, scale: 1.01 }}
-              className="bg-surface border border-line rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all group duration-300"
+              className="bg-surface border border-line rounded-2xl p-6 flex flex-col justify-between transition-shadow hover:shadow-md group duration-300"
             >
               <div>
                 <motion.div 
                   whileHover={{ rotate: -10, scale: 1.05 }}
-                  className="w-10 h-10 rounded-xl bg-teal/10 border border-teal/15 flex items-center justify-center text-teal mb-4 transition-transform duration-200"
+                  className="w-10 h-10 rounded-xl bg-teal/10 border border-teal/15 flex items-center justify-center text-teal mb-4"
                 >
                   <FileText className="w-5 h-5" />
                 </motion.div>
@@ -886,7 +892,7 @@ export default function LandingPage({
             <motion.div 
               variants={scaleIn}
               whileHover={{ scale: 1.04, rotate: 1 }}
-              className="flex items-center gap-3 bg-surface border border-line rounded-full px-5 py-3 shadow-xs hover:border-text-muted/20 transition-all cursor-default"
+              className="flex items-center gap-3 bg-surface border border-line rounded-full px-5 py-3 shadow-xs hover:border-text-muted/30 transition-colors duration-200 cursor-default"
             >
               <span className="w-2.5 h-2.5 rounded-full bg-[#3776AB]" />
               <div className="font-sans text-xs font-semibold">
@@ -897,7 +903,7 @@ export default function LandingPage({
             <motion.div 
               variants={scaleIn}
               whileHover={{ scale: 1.04, rotate: -1 }}
-              className="flex items-center gap-3 bg-surface border border-line rounded-full px-5 py-3 shadow-xs hover:border-text-muted/20 transition-all cursor-default"
+              className="flex items-center gap-3 bg-surface border border-line rounded-full px-5 py-3 shadow-xs hover:border-text-muted/30 transition-colors duration-200 cursor-default"
             >
               <span className="w-2.5 h-2.5 rounded-full bg-teal" />
               <div className="font-sans text-xs font-semibold">
@@ -908,7 +914,7 @@ export default function LandingPage({
             <motion.div 
               variants={scaleIn}
               whileHover={{ scale: 1.04, rotate: 1 }}
-              className="flex items-center gap-3 bg-surface border border-line rounded-full px-5 py-3 shadow-xs hover:border-text-muted/20 transition-all cursor-default"
+              className="flex items-center gap-3 bg-surface border border-line rounded-full px-5 py-3 shadow-xs hover:border-text-muted/30 transition-colors duration-200 cursor-default"
             >
               <span className="w-2.5 h-2.5 rounded-full bg-coral" />
               <div className="font-sans text-xs font-semibold">
@@ -919,7 +925,7 @@ export default function LandingPage({
             <motion.div 
               variants={scaleIn}
               whileHover={{ scale: 1.04, rotate: -1 }}
-              className="flex items-center gap-3 bg-surface border border-line rounded-full px-5 py-3 shadow-xs hover:border-text-muted/20 transition-all cursor-default"
+              className="flex items-center gap-3 bg-surface border border-line rounded-full px-5 py-3 shadow-xs hover:border-text-muted/30 transition-colors duration-200 cursor-default"
             >
               <span className="w-2.5 h-2.5 rounded-full bg-[#6C63B5]" />
               <div className="font-sans text-xs font-semibold">
@@ -957,8 +963,9 @@ export default function LandingPage({
             whileInView="visible"
             viewport={{ once: true, margin: "-80px" }}
             variants={scaleIn}
+            whileHover={{ scale: 1.005 }}
             onClick={() => onRedirectToDashboard()}
-            className="group relative bg-[#0B0E17] border border-[#2D3954]/50 rounded-2xl p-4 sm:p-6 shadow-2xl cursor-pointer hover:scale-[1.005] hover:shadow-coral/5 transition-all duration-300"
+            className="group relative bg-[#0B0E17] border border-[#2D3954]/50 rounded-2xl p-4 sm:p-6 shadow-2xl cursor-pointer transition-shadow hover:shadow-coral/10 duration-300"
           >
             <div className="absolute -top-3.5 right-6 bg-coral text-white font-mono text-[10px] font-black uppercase px-3 py-1 rounded-full tracking-wider shadow-md animate-bounce">
               ENTER LIVE ENVIRONMENT
@@ -992,7 +999,7 @@ export default function LandingPage({
 
               {/* Main panel teaser */}
               <div className="md:col-span-9 flex flex-col justify-between space-y-6">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="bg-[#141A29] border border-[#2D3954]/45 rounded-xl p-4 space-y-2">
                     <div className="h-2 w-16 bg-[#2D3954] rounded-sm font-mono text-[9px] uppercase tracking-wider text-text-muted">Target variable</div>
                     <div className="font-mono text-xs sm:text-sm font-bold text-white mt-1">REVENUE_USD</div>

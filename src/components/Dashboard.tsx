@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { jsPDF } from 'jspdf';
 import { Dataset, ModelConfig, ModelEvaluation, AIInsights, AIRecommendation } from '../types';
 import {
@@ -482,10 +483,40 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
       importance: f.importance,
     }));
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+        delayChildren: 0.05
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] }
+    }
+  };
+
   return (
-    <div className="space-y-6" id="dashboard-root">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6" 
+      id="dashboard-root"
+    >
       {/* Dashboard Sub-Header / Tool Bar */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface border border-line rounded-2xl p-5 shadow-xs" id="dashboard-header-bar">
+      <motion.div 
+        variants={itemVariants}
+        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface border border-line rounded-2xl p-5 shadow-xs" 
+        id="dashboard-header-bar"
+      >
         <div>
           <h3 className="font-sans font-bold text-text text-base flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-coral" />
@@ -507,7 +538,7 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
-              <span>Analyzing...</span>
+              <span>Analyze...</span>
             </>
           ) : !aiInsights ? (
             <>
@@ -521,13 +552,16 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
             </>
           )}
         </button>
-      </div>
+      </motion.div>
 
       {/* 1. Evaluation metrics panel */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" id="metrics-grid">
+      <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4" id="metrics-grid">
         {modelEvaluation.isClassification ? (
           <>
-            <div className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between">
+            <motion.div 
+              whileHover={{ y: -2 }}
+              className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between transition-colors duration-200 hover:border-line/75"
+            >
               <span className="text-[10px] text-text-muted font-mono uppercase">Model Accuracy</span>
               <div className="text-2xl font-mono font-bold text-text mt-2">
                 {Math.round((modelEvaluation.accuracy || 0) * 1000) / 10}%
@@ -535,8 +569,11 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
               <p className="text-[10px] text-text-muted mt-1 leading-relaxed">
                 Overall correct test classification rate.
               </p>
-            </div>
-            <div className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between">
+            </motion.div>
+            <motion.div 
+              whileHover={{ y: -2 }}
+              className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between transition-colors duration-200 hover:border-line/75"
+            >
               <span className="text-[10px] text-text-muted font-mono uppercase">F1-Score</span>
               <div className="text-2xl font-mono font-bold text-coral mt-2">
                 {modelEvaluation.f1Score}
@@ -544,8 +581,11 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
               <p className="text-[10px] text-text-muted mt-1 leading-relaxed">
                 Harmonic balance between Precision and Recall.
               </p>
-            </div>
-            <div className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between">
+            </motion.div>
+            <motion.div 
+              whileHover={{ y: -2 }}
+              className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between transition-colors duration-200 hover:border-line/75"
+            >
               <span className="text-[10px] text-text-muted font-mono uppercase">Precision</span>
               <div className="text-2xl font-mono font-bold text-text mt-2">
                 {modelEvaluation.precision}
@@ -553,8 +593,11 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
               <p className="text-[10px] text-text-muted mt-1 leading-relaxed">
                 Correctness of classification positive triggers.
               </p>
-            </div>
-            <div className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between">
+            </motion.div>
+            <motion.div 
+              whileHover={{ y: -2 }}
+              className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between transition-colors duration-200 hover:border-line/75"
+            >
               <span className="text-[10px] text-text-muted font-mono uppercase">Recall</span>
               <div className="text-2xl font-mono font-bold text-text mt-2">
                 {modelEvaluation.recall}
@@ -562,11 +605,14 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
               <p className="text-[10px] text-text-muted mt-1 leading-relaxed">
                 Ability to identify all true positive instances.
               </p>
-            </div>
+            </motion.div>
           </>
         ) : (
           <>
-            <div className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between">
+            <motion.div 
+              whileHover={{ y: -2 }}
+              className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between transition-colors duration-200 hover:border-line/75"
+            >
               <span className="text-[10px] text-text-muted font-mono uppercase">R-Squared Coefficient</span>
               <div className="text-2xl font-mono font-bold text-text mt-2">
                 {modelEvaluation.r2Score}
@@ -574,8 +620,11 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
               <p className="text-[10px] text-text-muted mt-1 leading-relaxed">
                 Proportion of variance explained by model predictors.
               </p>
-            </div>
-            <div className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between">
+            </motion.div>
+            <motion.div 
+              whileHover={{ y: -2 }}
+              className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between transition-colors duration-200 hover:border-line/75"
+            >
               <span className="text-[10px] text-text-muted font-mono uppercase">Mean Absolute Error</span>
               <div className="text-2xl font-mono font-bold text-coral mt-2">
                 {modelEvaluation.mae}
@@ -583,8 +632,11 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
               <p className="text-[10px] text-text-muted mt-1 leading-relaxed">
                 Average absolute distance between predictions and actual targets.
               </p>
-            </div>
-            <div className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between">
+            </motion.div>
+            <motion.div 
+              whileHover={{ y: -2 }}
+              className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between transition-colors duration-200 hover:border-line/75"
+            >
               <span className="text-[10px] text-text-muted font-mono uppercase">RMSE (Error Standard Deviation)</span>
               <div className="text-2xl font-mono font-bold text-text mt-2">
                 {modelEvaluation.rmse}
@@ -592,8 +644,11 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
               <p className="text-[10px] text-text-muted mt-1 leading-relaxed">
                 Root Mean Squared Error penalizing large outliers.
               </p>
-            </div>
-            <div className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between">
+            </motion.div>
+            <motion.div 
+              whileHover={{ y: -2 }}
+              className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between transition-colors duration-200 hover:border-line/75"
+            >
               <span className="text-[10px] text-text-muted font-mono uppercase">Optimization Latency</span>
               <div className="text-2xl font-mono font-bold text-text mt-2">
                 {modelEvaluation.trainingTimeMs} ms
@@ -601,15 +656,15 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
               <p className="text-[10px] text-text-muted mt-1 leading-relaxed">
                 Processing time required to reach gradient convergence.
               </p>
-            </div>
+            </motion.div>
           </>
         )}
-      </div>
+      </motion.div>
 
       {/* 2. Charts section */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6" id="charts-grid">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-12 gap-6" id="charts-grid">
         {/* Feature Importance Bar Chart - 5 cols */}
-        <div className="lg:col-span-5 bg-surface border border-line rounded-2xl p-5 space-y-4">
+        <div className="lg:col-span-5 bg-surface border border-line rounded-2xl p-5 space-y-4 min-w-0">
           <h3 className="font-sans font-semibold text-text text-base flex items-center gap-1.5">
             <Brain className="w-5 h-5 text-coral" />
             Relative Feature Coefficients
@@ -651,7 +706,7 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
         </div>
 
         {/* Predictions Fit Chart - 7 cols */}
-        <div className="lg:col-span-7 bg-surface border border-line rounded-2xl p-5 space-y-4">
+        <div className="lg:col-span-7 bg-surface border border-line rounded-2xl p-5 space-y-4 min-w-0">
           <h3 className="font-sans font-semibold text-text text-base flex items-center gap-1.5">
             <TrendingUp className="w-5 h-5 text-teal" />
             Predictions vs. Actual Values Fit
@@ -707,12 +762,12 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* 3. Predictor Simulator & Executive Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6" id="simulator-summary-section">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-12 gap-6" id="simulator-summary-section">
         {/* ML Simulator Panel - 6 cols */}
-        <div className="lg:col-span-6 bg-surface border border-line rounded-2xl p-6 space-y-6 flex flex-col justify-between">
+        <div className="lg:col-span-6 bg-surface border border-line rounded-2xl p-6 space-y-6 flex flex-col justify-between min-w-0">
           <div>
             <h3 className="font-sans font-semibold text-text text-lg pb-3 border-b border-line flex items-center gap-2">
               <Sliders className="w-5 h-5 text-coral" />
@@ -889,18 +944,26 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
             MODEL: gemini-3.5-flash · Grounded Analytics
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* 4. Strategic Recommendations Cards row */}
       {aiInsights && aiInsights.recommendations && (
-        <div className="space-y-4" id="recommendations-container">
+        <motion.div 
+          variants={itemVariants}
+          className="space-y-4" 
+          id="recommendations-container"
+        >
           <h3 className="font-sans font-semibold text-text text-base flex items-center gap-1.5">
             <Award className="w-5 h-5 text-coral" />
             Strategic Business Recommendations
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {aiInsights.recommendations.map((rec: AIRecommendation, i) => (
-              <div key={rec.id || i} className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between">
+              <motion.div 
+                key={rec.id || i} 
+                whileHover={{ y: -2 }}
+                className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between transition-colors duration-200 hover:border-line/75"
+              >
                 <div>
                   <div className="flex justify-between items-center mb-3 font-mono text-[9px] uppercase">
                     <span className="px-2 py-0.5 rounded-full bg-panel2 text-text-muted font-bold">
@@ -920,142 +983,156 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
                 <div className="border-t border-line/40 pt-3 mt-4 flex justify-between font-mono text-[10px] text-text-muted">
                   <span>Feasibility: <strong className="text-text">{rec.feasibility}</strong></span>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Executive Report Print-friendly Modal */}
-      {showReportModal && aiInsights && (
-        <div className="fixed inset-0 bg-text/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto" id="report-modal">
-          <div className="bg-surface rounded-3xl max-w-4xl w-full border border-line p-8 space-y-8 relative max-h-[90vh] overflow-y-auto shadow-2xl">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pb-6 border-b border-line">
-              <div>
-                <div className="text-[10px] text-coral font-mono font-bold uppercase tracking-widest">
-                  BI INTEL · EXECUTIVE STRATEGIC DELIVERABLE
-                </div>
-                <h2 className="font-sans font-black text-text text-2xl leading-tight mt-1">
-                  Predictive Analysis & Decisions Report
-                </h2>
-                <p className="text-text-muted text-xs font-mono mt-0.5">
-                  DATASET: {dataset.name} · ALGORITHM: {modelConfig.algorithm.toUpperCase().replace('_', ' ')}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleExportPDF}
-                  className="px-4 py-2 bg-coral text-white hover:bg-coral/90 rounded-xl text-xs font-mono font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  Download PDF
-                </button>
-                <button
-                  onClick={() => window.print()}
-                  className="px-4 py-2 bg-text hover:bg-text/90 text-surface rounded-xl text-xs font-mono font-semibold flex items-center gap-1.5 cursor-pointer"
-                >
-                  <FileText className="w-3.5 h-3.5" />
-                  Print Report
-                </button>
-                <button
-                  onClick={() => setShowReportModal(false)}
-                  className="px-4 py-2 border border-line hover:border-text text-text rounded-xl text-xs font-mono transition-all cursor-pointer"
-                >
-                  Close Report
-                </button>
-              </div>
-            </div>
-
-            {/* Print Body */}
-            <div className="space-y-6 print:space-y-6">
-              {/* Stats Box */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 bg-panel2 rounded-2xl border border-line/50 font-mono">
+      <AnimatePresence>
+        {showReportModal && aiInsights && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-text/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto" 
+            id="report-modal"
+          >
+            <motion.div 
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 50, opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-surface rounded-3xl max-w-4xl w-full border border-line p-5 sm:p-8 space-y-8 relative max-h-[90vh] overflow-y-auto shadow-2xl"
+            >
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pb-6 border-b border-line">
                 <div>
-                  <div className="text-[10px] text-text-muted uppercase">Dataset Rows</div>
-                  <div className="text-sm font-bold text-text">{dataset.rowCount}</div>
-                </div>
-                <div>
-                  <div className="text-[10px] text-text-muted uppercase">Target Variable</div>
-                  <div className="text-sm font-bold text-text truncate max-w-[150px]">{modelConfig.targetColumn}</div>
-                </div>
-                <div>
-                  <div className="text-[10px] text-text-muted uppercase">Validation Split</div>
-                  <div className="text-sm font-bold text-text">{modelConfig.trainTestRatio * 100}%</div>
-                </div>
-                <div>
-                  <div className="text-[10px] text-text-muted uppercase">Fit Quality</div>
-                  <div className="text-sm font-bold text-text">
-                    {modelEvaluation.isClassification
-                      ? `Accuracy: ${modelEvaluation.accuracy}`
-                      : `R²: ${modelEvaluation.r2Score}`}
+                  <div className="text-[10px] text-coral font-mono font-bold uppercase tracking-widest">
+                    BI INTEL · EXECUTIVE STRATEGIC DELIVERABLE
                   </div>
+                  <h2 className="font-sans font-black text-text text-2xl leading-tight mt-1">
+                    Predictive Analysis & Decisions Report
+                  </h2>
+                  <p className="text-text-muted text-xs font-mono mt-0.5">
+                    DATASET: {dataset.name} · ALGORITHM: {modelConfig.algorithm.toUpperCase().replace('_', ' ')}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2 justify-end">
+                  <button
+                    onClick={handleExportPDF}
+                    className="px-4 py-2 bg-coral text-white hover:bg-coral/90 rounded-xl text-xs font-mono font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download PDF
+                  </button>
+                  <button
+                    onClick={() => window.print()}
+                    className="px-4 py-2 bg-text hover:bg-text/90 text-surface rounded-xl text-xs font-mono font-semibold flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    Print Report
+                  </button>
+                  <button
+                    onClick={() => setShowReportModal(false)}
+                    className="px-4 py-2 border border-line hover:border-text text-text rounded-xl text-xs font-mono transition-all cursor-pointer"
+                  >
+                    Close Report
+                  </button>
                 </div>
               </div>
 
-              {/* Executive Summary */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold font-mono text-text uppercase tracking-wider">
-                  1. Executive Summary
-                </h4>
-                <p className="font-sans text-xs text-text-muted leading-relaxed">
-                  {aiInsights.summary}
-                </p>
-              </div>
-
-              {/* Coefficient Insights */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold font-mono text-text uppercase tracking-wider">
-                  2. Dynamic Impact & Feature Coefficient Logic
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2 font-sans text-xs text-text-muted leading-relaxed">
-                    {aiInsights.featuresInsight.map((ins, i) => (
-                      <p key={i}>• {ins}</p>
-                    ))}
+              {/* Print Body */}
+              <div className="space-y-6 print:space-y-6">
+                {/* Stats Box */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 bg-panel2 rounded-2xl border border-line/50 font-mono">
+                  <div>
+                    <div className="text-[10px] text-text-muted uppercase">Dataset Rows</div>
+                    <div className="text-sm font-bold text-text">{dataset.rowCount}</div>
                   </div>
-                  {/* Miniature list of importances */}
-                  <div className="bg-panel2/40 rounded-xl p-4 border border-line/40 space-y-2 font-mono text-[11px]">
-                    <div className="text-[10px] text-text-muted uppercase font-bold border-b border-line pb-1">
-                      Fitted Feature Magnitude Rankings
+                  <div>
+                    <div className="text-[10px] text-text-muted uppercase">Target Variable</div>
+                    <div className="text-sm font-bold text-text truncate max-w-[150px]">{modelConfig.targetColumn}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-text-muted uppercase">Validation Split</div>
+                    <div className="text-sm font-bold text-text">{modelConfig.trainTestRatio * 100}%</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-text-muted uppercase">Fit Quality</div>
+                    <div className="text-sm font-bold text-text">
+                      {modelEvaluation.isClassification
+                        ? `Accuracy: ${modelEvaluation.accuracy}`
+                        : `R²: ${modelEvaluation.r2Score}`}
                     </div>
-                    {modelEvaluation.featureImportances.map((f, i) => (
-                      <div key={i} className="flex justify-between items-center text-text-muted">
-                        <span>{f.featureName}</span>
-                        <span className="font-bold text-text">{f.importance}%</span>
-                      </div>
-                    ))}
                   </div>
                 </div>
-              </div>
 
-              {/* Action Recommendations */}
-              <div className="space-y-4">
-                <h4 className="text-xs font-bold font-mono text-text uppercase tracking-wider">
-                  3. Strategic Directive Recommendations
-                </h4>
+                {/* Executive Summary */}
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold font-mono text-text uppercase tracking-wider">
+                    1. Executive Summary
+                  </h4>
+                  <p className="font-sans text-xs text-text-muted leading-relaxed">
+                    {aiInsights.summary}
+                  </p>
+                </div>
+
+                {/* Coefficient Insights */}
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold font-mono text-text uppercase tracking-wider">
+                    2. Dynamic Impact & Feature Coefficient Logic
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2 font-sans text-xs text-text-muted leading-relaxed">
+                      {aiInsights.featuresInsight.map((ins, i) => (
+                        <p key={i}>• {ins}</p>
+                      ))}
+                    </div>
+                    {/* Miniature list of importances */}
+                    <div className="bg-panel2/40 rounded-xl p-4 border border-line/40 space-y-2 font-mono text-[11px]">
+                      <div className="text-[10px] text-text-muted uppercase font-bold border-b border-line pb-1">
+                        Fitted Feature Magnitude Rankings
+                      </div>
+                      {modelEvaluation.featureImportances.map((f, i) => (
+                        <div key={i} className="flex justify-between items-center text-text-muted">
+                          <span>{f.featureName}</span>
+                          <span className="font-bold text-text">{f.importance}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Recommendations */}
                 <div className="space-y-4">
-                  {aiInsights.recommendations.map((rec: AIRecommendation, i) => (
-                    <div key={i} className="border border-line rounded-xl p-4 font-sans">
-                      <div className="flex justify-between items-center mb-1 text-[10px] font-mono text-text-muted uppercase">
-                        <span>CATEGORY: {rec.category}</span>
-                        <span>IMPACT: {rec.impact}</span>
+                  <h4 className="text-xs font-bold font-mono text-text uppercase tracking-wider">
+                    3. Strategic Directive Recommendations
+                  </h4>
+                  <div className="space-y-4">
+                    {aiInsights.recommendations.map((rec: AIRecommendation, i) => (
+                      <div key={i} className="border border-line rounded-xl p-4 font-sans">
+                        <div className="flex justify-between items-center mb-1 text-[10px] font-mono text-text-muted uppercase">
+                          <span>CATEGORY: {rec.category}</span>
+                          <span>IMPACT: {rec.impact}</span>
+                        </div>
+                        <h5 className="font-bold text-text text-sm mb-1">{rec.title}</h5>
+                        <p className="text-text-muted text-xs leading-relaxed">{rec.text}</p>
                       </div>
-                      <h5 className="font-bold text-text text-sm mb-1">{rec.title}</h5>
-                      <p className="text-text-muted text-xs leading-relaxed">{rec.text}</p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Footer */}
-            <div className="text-center font-mono text-[9px] text-text-muted border-t border-line/60 pt-4 mt-6">
-              BI INTEL DECISION SUITE · POWERED BY GEMINI AI · DATED {new Date().toLocaleDateString()}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+              {/* Footer */}
+              <div className="text-center font-mono text-[9px] text-text-muted border-t border-line/60 pt-4 mt-6">
+                BI INTEL DECISION SUITE · POWERED BY GEMINI AI · DATED {new Date().toLocaleDateString()}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

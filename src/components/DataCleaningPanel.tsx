@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { Dataset, CleaningConfig, CleaningReport } from '../types';
 import { Sparkles, RefreshCw, Trash2, ArrowRight, ShieldAlert, Terminal, HelpCircle } from 'lucide-react';
 
@@ -49,11 +50,39 @@ export default function DataCleaningPanel({ dataset, onDataCleaned, isLoading, s
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] }
+    }
+  };
+
   return (
-    <div className="space-y-6" id="data-cleaning-panel-root">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6" 
+      id="data-cleaning-panel-root"
+    >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Cleaning Configuration controls - 5 cols */}
-        <div className="lg:col-span-5 bg-surface border border-line rounded-2xl p-6 space-y-6">
+        <motion.div 
+          variants={itemVariants}
+          className="lg:col-span-5 bg-surface border border-line rounded-2xl p-6 space-y-6"
+        >
           <h3 className="font-sans font-semibold text-text text-lg pb-3 border-b border-line flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-coral" />
             Cleaning Configuration
@@ -199,10 +228,13 @@ export default function DataCleaningPanel({ dataset, onDataCleaned, isLoading, s
               {error}
             </p>
           )}
-        </div>
+        </motion.div>
 
         {/* Live Cleaning Report / Logging Terminal - 7 cols */}
-        <div className="lg:col-span-7 space-y-6">
+        <motion.div 
+          variants={itemVariants}
+          className="lg:col-span-7 space-y-6"
+        >
           {/* Cleaning Stats Comparison */}
           <div className="bg-surface border border-line rounded-2xl p-6 space-y-6 flex flex-col justify-between h-full">
             <div>
@@ -222,31 +254,43 @@ export default function DataCleaningPanel({ dataset, onDataCleaned, isLoading, s
                 <div className="space-y-6 pt-4">
                   {/* Clean stats metrics grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div className="p-3.5 rounded-xl bg-panel2 border border-line/45 text-center">
+                    <motion.div 
+                      whileHover={{ y: -2 }}
+                      className="p-3.5 rounded-xl bg-panel2 border border-line/45 text-center transition-colors duration-200 hover:border-line/70"
+                    >
                       <div className="text-[10px] text-text-muted font-mono uppercase mb-0.5">Initial Rows</div>
                       <div className="text-lg font-mono font-bold text-text-muted line-through leading-none">
                         {cleaningReport.rowCountBefore}
                       </div>
-                    </div>
-                    <div className="p-3.5 rounded-xl bg-panel2 border border-line/45 text-center">
+                    </motion.div>
+                    <motion.div 
+                      whileHover={{ y: -2 }}
+                      className="p-3.5 rounded-xl bg-panel2 border border-line/45 text-center transition-colors duration-200 hover:border-line/70"
+                    >
                       <div className="text-[10px] text-teal font-mono uppercase mb-0.5">Cleaned Rows</div>
                       <div className="text-lg font-mono font-bold text-teal leading-none flex items-center justify-center gap-1">
                         {cleaningReport.rowCountAfter}
                         <ArrowRight className="w-3.5 h-3.5 text-teal" />
                       </div>
-                    </div>
-                    <div className="p-3.5 rounded-xl bg-panel2 border border-line/45 text-center">
+                    </motion.div>
+                    <motion.div 
+                      whileHover={{ y: -2 }}
+                      className="p-3.5 rounded-xl bg-panel2 border border-line/45 text-center transition-colors duration-200 hover:border-line/70"
+                    >
                       <div className="text-[10px] text-text-muted font-mono uppercase mb-0.5">Nulls Handled</div>
                       <div className="text-lg font-mono font-bold text-text leading-none">
                         {cleaningReport.nullsFilled}
                       </div>
-                    </div>
-                    <div className="p-3.5 rounded-xl bg-panel2 border border-line/45 text-center">
+                    </motion.div>
+                    <motion.div 
+                      whileHover={{ y: -2 }}
+                      className="p-3.5 rounded-xl bg-panel2 border border-line/45 text-center transition-colors duration-200 hover:border-line/70"
+                    >
                       <div className="text-[10px] text-text-muted font-mono uppercase mb-0.5">Capped Outliers</div>
                       <div className="text-lg font-mono font-bold text-text leading-none">
                         {cleaningReport.outliersCapped}
                       </div>
-                    </div>
+                    </motion.div>
                   </div>
 
                   {/* Terminal Execution Logs */}
@@ -283,8 +327,8 @@ export default function DataCleaningPanel({ dataset, onDataCleaned, isLoading, s
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

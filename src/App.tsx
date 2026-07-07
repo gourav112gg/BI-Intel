@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Lenis from 'lenis';
+import { motion, AnimatePresence } from 'motion/react';
 import { Dataset, CleaningConfig, CleaningReport, ModelConfig, ModelEvaluation } from './types';
 import { defaultDatasets } from './data/datasets';
 import DatasetSelector from './components/DatasetSelector';
@@ -29,6 +31,155 @@ export default function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     return (localStorage.getItem('theme') as 'light' | 'dark') || 'light';
   });
+
+  // Initialize Lenis smooth scroll
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.1,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // easeOutExpo
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.5,
+    });
+
+    let rafId: number;
+    function raf(time: number) {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    }
+    rafId = requestAnimationFrame(raf);
+
+    // Sync scroll event to window
+    lenis.on('scroll', () => {
+      window.dispatchEvent(new Event('scroll'));
+    });
+
+    return () => {
+      lenis.destroy();
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  const renderNavItems = () => {
+    return (
+      <>
+        {/* Back to Home Page */}
+        <button
+          onClick={() => {
+            setViewMode('landing');
+            setMobileMenuOpen(false);
+          }}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-mono font-semibold text-left transition-all cursor-pointer text-text-muted hover:bg-panel2/65 hover:text-text mb-2 border border-dashed border-line/50"
+        >
+          <Home className="w-4 h-4 text-coral shrink-0" />
+          ← Back to Home
+        </button>
+
+        {/* 1. Datasets selection */}
+        <button
+          onClick={() => {
+            setActiveTab('datasets');
+            setMobileMenuOpen(false);
+          }}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-mono font-semibold text-left transition-all cursor-pointer ${
+            activeTab === 'datasets'
+              ? 'bg-text text-surface'
+              : 'text-text-muted hover:bg-panel2/65 hover:text-text'
+          }`}
+        >
+          <Database className="w-4 h-4 text-coral shrink-0" />
+          1. Datasets Ingest
+        </button>
+
+        {/* 2. Cleaning */}
+        <button
+          onClick={() => {
+            if (selectedDataset) {
+              setActiveTab('cleaning');
+              setMobileMenuOpen(false);
+            }
+          }}
+          disabled={!selectedDataset}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-mono font-semibold text-left transition-all cursor-pointer ${
+            activeTab === 'cleaning'
+              ? 'bg-text text-surface'
+              : 'text-text-muted hover:bg-panel2/65 hover:text-text disabled:opacity-40 disabled:cursor-not-allowed'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-coral shrink-0" />
+          2. Data Cleaning
+          {cleanedData && (
+            <span className="ml-auto w-1.5 h-1.5 rounded-full bg-teal" />
+          )}
+        </button>
+
+        {/* 3. Training */}
+        <button
+          onClick={() => {
+            if (selectedDataset) {
+              setActiveTab('training');
+              setMobileMenuOpen(false);
+            }
+          }}
+          disabled={!selectedDataset}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-mono font-semibold text-left transition-all cursor-pointer ${
+            activeTab === 'training'
+              ? 'bg-text text-surface'
+              : 'text-text-muted hover:bg-panel2/65 hover:text-text disabled:opacity-40 disabled:cursor-not-allowed'
+          }`}
+        >
+          <Play className="w-4 h-4 text-coral shrink-0" />
+          3. Model Trainer
+          {isModelReady && (
+            <span className="ml-auto w-1.5 h-1.5 rounded-full bg-teal" />
+          )}
+        </button>
+
+        {/* 4. Dashboard (requires training) */}
+        <button
+          onClick={() => {
+            if (isModelReady) {
+              setActiveTab('dashboard');
+              setMobileMenuOpen(false);
+            }
+          }}
+          disabled={!isModelReady}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-mono font-semibold text-left transition-all cursor-pointer ${
+            activeTab === 'dashboard'
+              ? 'bg-text text-surface'
+              : 'text-text-muted hover:bg-panel2/65 hover:text-text disabled:opacity-40 disabled:cursor-not-allowed'
+          }`}
+        >
+          <LayoutDashboard className="w-4 h-4 text-coral shrink-0" />
+          4. Predictive Dashboard
+        </button>
+
+        {/* Divider */}
+        <div className="h-px bg-line/60 my-3" />
+
+        {/* Theme Toggle Button */}
+        <button
+          onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+          className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-mono font-semibold transition-all cursor-pointer text-text-muted hover:bg-panel2/65 hover:text-text"
+          id="theme-toggle-btn"
+        >
+          <div className="flex items-center gap-3">
+            {theme === 'light' ? (
+              <Moon className="w-4 h-4 text-coral shrink-0" />
+            ) : (
+              <Sun className="w-4 h-4 text-coral shrink-0" />
+            )}
+            <span>Theme: {theme === 'light' ? 'Light' : 'Dark'}</span>
+          </div>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-panel2 font-mono text-text border border-line/45">
+            {theme.toUpperCase()}
+          </span>
+        </button>
+      </>
+    );
+  };
 
   // Keep theme class in sync on document element
   useEffect(() => {
@@ -144,120 +295,27 @@ export default function App() {
           </div>
 
           {/* Nav Item list */}
-          <nav className={`p-4 space-y-1.5 md:block ${mobileMenuOpen ? 'block' : 'hidden'}`} id="navigation-panel">
-            {/* Back to Home Page */}
-            <button
-              onClick={() => {
-                setViewMode('landing');
-                setMobileMenuOpen(false);
-              }}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-mono font-semibold text-left transition-all cursor-pointer text-text-muted hover:bg-panel2/65 hover:text-text mb-2 border border-dashed border-line/50"
-            >
-              <Home className="w-4 h-4 text-coral shrink-0" />
-              ← Back to Home
-            </button>
+          <div className="hidden md:block">
+            <nav className="p-4 space-y-1.5" id="navigation-panel">
+              {renderNavItems()}
+            </nav>
+          </div>
 
-            {/* 1. Datasets selection */}
-            <button
-              onClick={() => {
-                setActiveTab('datasets');
-                setMobileMenuOpen(false);
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-mono font-semibold text-left transition-all cursor-pointer ${
-                activeTab === 'datasets'
-                  ? 'bg-text text-surface'
-                  : 'text-text-muted hover:bg-panel2/65 hover:text-text'
-              }`}
-            >
-              <Database className="w-4 h-4 text-coral shrink-0" />
-              1. Datasets Ingest
-            </button>
-
-            {/* 2. Cleaning */}
-            <button
-              onClick={() => {
-                if (selectedDataset) {
-                  setActiveTab('cleaning');
-                  setMobileMenuOpen(false);
-                }
-              }}
-              disabled={!selectedDataset}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-mono font-semibold text-left transition-all cursor-pointer ${
-                activeTab === 'cleaning'
-                  ? 'bg-text text-surface'
-                  : 'text-text-muted hover:bg-panel2/65 hover:text-text disabled:opacity-40 disabled:cursor-not-allowed'
-              }`}
-            >
-              <Sparkles className="w-4 h-4 text-coral shrink-0" />
-              2. Data Cleaning
-              {cleanedData && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-teal" />
-              )}
-            </button>
-
-            {/* 3. Training */}
-            <button
-              onClick={() => {
-                if (selectedDataset) {
-                  setActiveTab('training');
-                  setMobileMenuOpen(false);
-                }
-              }}
-              disabled={!selectedDataset}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-mono font-semibold text-left transition-all cursor-pointer ${
-                activeTab === 'training'
-                  ? 'bg-text text-surface'
-                  : 'text-text-muted hover:bg-panel2/65 hover:text-text disabled:opacity-40 disabled:cursor-not-allowed'
-              }`}
-            >
-              <Play className="w-4 h-4 text-coral shrink-0" />
-              3. Model Trainer
-              {isModelReady && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-teal" />
-              )}
-            </button>
-
-            {/* 4. Dashboard (requires training) */}
-            <button
-              onClick={() => {
-                if (isModelReady) {
-                  setActiveTab('dashboard');
-                  setMobileMenuOpen(false);
-                }
-              }}
-              disabled={!isModelReady}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-mono font-semibold text-left transition-all cursor-pointer ${
-                activeTab === 'dashboard'
-                  ? 'bg-text text-surface'
-                  : 'text-text-muted hover:bg-panel2/65 hover:text-text disabled:opacity-40 disabled:cursor-not-allowed'
-              }`}
-            >
-              <LayoutDashboard className="w-4 h-4 text-coral shrink-0" />
-              4. Predictive Dashboard
-            </button>
-
-            {/* Divider */}
-            <div className="h-px bg-line/60 my-3" />
-
-            {/* Theme Toggle Button */}
-            <button
-              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-              className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-mono font-semibold transition-all cursor-pointer text-text-muted hover:bg-panel2/65 hover:text-text"
-              id="theme-toggle-btn"
-            >
-              <div className="flex items-center gap-3">
-                {theme === 'light' ? (
-                  <Moon className="w-4 h-4 text-coral shrink-0" />
-                ) : (
-                  <Sun className="w-4 h-4 text-coral shrink-0" />
-                )}
-                <span>Theme: {theme === 'light' ? 'Light' : 'Dark'}</span>
-              </div>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-panel2 font-mono text-text border border-line/45">
-                {theme.toUpperCase()}
-              </span>
-            </button>
-          </nav>
+          <AnimatePresence initial={false}>
+            {mobileMenuOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                className="md:hidden overflow-hidden border-t border-line/40 w-full"
+              >
+                <nav className="p-4 space-y-1.5" id="navigation-panel-mobile">
+                  {renderNavItems()}
+                </nav>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Bounded disclaimer */}
@@ -310,40 +368,51 @@ export default function App() {
 
         {/* Tab components display switcher */}
         <div id="active-tab-container">
-          {activeTab === 'datasets' && (
-            <DatasetSelector
-              selectedDataset={selectedDataset}
-              onDatasetSelect={handleDatasetSelect}
-            />
-          )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="will-change-[transform,opacity]"
+            >
+              {activeTab === 'datasets' && (
+                <DatasetSelector
+                  selectedDataset={selectedDataset}
+                  onDatasetSelect={handleDatasetSelect}
+                />
+              )}
 
-          {activeTab === 'cleaning' && selectedDataset && (
-            <DataCleaningPanel
-              dataset={selectedDataset}
-              onDataCleaned={handleDataCleaned}
-              isLoading={isLoading}
-              setIsLoading={setIsLoading}
-            />
-          )}
+              {activeTab === 'cleaning' && selectedDataset && (
+                <DataCleaningPanel
+                  dataset={selectedDataset}
+                  onDataCleaned={handleDataCleaned}
+                  isLoading={isLoading}
+                  setIsLoading={setIsLoading}
+                />
+              )}
 
-          {activeTab === 'training' && selectedDataset && (
-            <ModelTrainer
-              dataset={selectedDataset}
-              cleanedData={cleanedData}
-              onModelTrained={handleModelTrained}
-              isLoading={isLoading}
-              setIsLoading={setIsLoading}
-            />
-          )}
+              {activeTab === 'training' && selectedDataset && (
+                <ModelTrainer
+                  dataset={selectedDataset}
+                  cleanedData={cleanedData}
+                  onModelTrained={handleModelTrained}
+                  isLoading={isLoading}
+                  setIsLoading={setIsLoading}
+                />
+              )}
 
-          {activeTab === 'dashboard' && selectedDataset && modelConfig && modelEvaluation && (
-            <Dashboard
-              dataset={selectedDataset}
-              modelConfig={modelConfig}
-              modelEvaluation={modelEvaluation}
-              theme={theme}
-            />
-          )}
+              {activeTab === 'dashboard' && selectedDataset && modelConfig && modelEvaluation && (
+                <Dashboard
+                  dataset={selectedDataset}
+                  modelConfig={modelConfig}
+                  modelEvaluation={modelEvaluation}
+                  theme={theme}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
     </div>
