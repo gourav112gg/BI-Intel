@@ -112,9 +112,20 @@ export default function ModelTrainer({
         }),
       });
 
+      const contentType = response.headers.get('content-type');
+      const isJson = contentType && contentType.includes('application/json');
+
       if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || 'Server failed to train model.');
+        if (isJson) {
+          const errData = await response.json();
+          throw new Error(errData.error || 'Server failed to train model.');
+        } else {
+          throw new Error(`Server returned a non-JSON response (status ${response.status}). Please make sure you are accessing the application via http://localhost:3000 and that the backend server is running.`);
+        }
+      }
+
+      if (!isJson) {
+        throw new Error(`Server returned a non-JSON response. Please make sure you are accessing the application via http://localhost:3000 and that the backend server is running.`);
       }
 
       const result = await response.json();

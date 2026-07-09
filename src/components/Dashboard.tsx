@@ -445,17 +445,24 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
           }),
         });
 
-        if (!response.ok) {
-          throw new Error('Could not retrieve insights from server.');
-        }
+      const contentType = response.headers.get('content-type');
+      const isJson = contentType && contentType.includes('application/json');
 
-        const data = await response.json();
-        setAiInsights(data);
-      } catch (err: any) {
-        setAiError(err.message || 'Failed to fetch AI Insights.');
-      } finally {
-        setAiLoading(false);
+      if (!response.ok) {
+        throw new Error(`Server returned a non-JSON response (status ${response.status}). Please make sure you are accessing the application via http://localhost:3000 and that the backend server is running.`);
       }
+
+      if (!isJson) {
+        throw new Error(`Server returned a non-JSON response. Please make sure you are accessing the application via http://localhost:3000 and that the backend server is running.`);
+      }
+
+      const data = await response.json();
+      setAiInsights(data);
+    } catch (err: any) {
+      setAiError(err.message || 'Failed to fetch AI Insights.');
+    } finally {
+      setAiLoading(false);
+    }
     };
 
     fetchAIInsights();
