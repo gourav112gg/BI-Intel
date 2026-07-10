@@ -868,7 +868,7 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
             <div className="flex justify-between items-center pb-3 border-b border-line mb-4">
               <h3 className="font-sans font-semibold text-text text-lg flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-coral" />
-                AI Strategic Insights
+                Strategic Insights
               </h3>
               <button
                 onClick={() => setShowReportModal(true)}
@@ -947,9 +947,7 @@ export default function Dashboard({ dataset, modelConfig, modelEvaluation, theme
             )}
           </div>
 
-          <div className="text-[10px] text-text-muted font-mono uppercase text-right mt-6 border-t border-line/45 pt-3.5">
-            MODEL: gemini-3.5-flash · Grounded Analytics
-          </div>
+
         </div>
       </motion.div>
 
