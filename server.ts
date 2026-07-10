@@ -10,6 +10,15 @@ const PORT = 3000;
 
 app.use(express.json({ limit: '50mb' }));
 
+// Middleware to restore original request URL on serverless platforms (e.g. Vercel)
+app.use((req, res, next) => {
+  const originalUrl = req.headers['x-forwarded-url'] || req.headers['x-original-url'];
+  if (originalUrl && typeof originalUrl === 'string') {
+    req.url = originalUrl;
+  }
+  next();
+});
+
 // ==========================================
 // DATA CLEANING PIPELINE ENGINE
 // ==========================================
