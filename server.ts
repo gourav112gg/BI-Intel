@@ -16,13 +16,20 @@ const PORT = 3000;
 
 app.use(express.json({ limit: '50mb' }));
 
-// Middleware to restore original request URL on serverless platforms (e.g. Vercel)
+// CORS headers for Vercel serverless deployment
 app.use((req, res, next) => {
-  const originalUrl = req.headers['x-forwarded-url'] || req.headers['x-original-url'];
-  if (originalUrl && typeof originalUrl === 'string') {
-    req.url = originalUrl;
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
   }
   next();
+});
+
+// Health check endpoint to verify the API is reachable
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 function getDatasetHash(rawData: any[]): string {
