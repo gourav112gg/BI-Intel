@@ -1,9 +1,15 @@
 import express from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
+import { createClient } from '@supabase/supabase-js';
 
 // Load environment variables
 dotenv.config();
+
+// Initialize Supabase Client
+const supabaseUrl = process.env.SUPABASE_URL || 'https://gqbtcklotgccnoeazqil.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxYnRja2xvdGdjY25vZWF6cWlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2ODE4NjMsImV4cCI6MjA5OTI1Nzg2M30.nsvlfY_8LDil7qsEulC0D210QiUxwSp49-3jQtA0ShE';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const app = express();
 const PORT = 3000;
@@ -18,6 +24,96 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+function getDatasetHash(rawData: any[]): string {
+  const rowCount = rawData.length;
+  const colCount = Object.keys(rawData[0] || {}).length;
+  const sample = JSON.stringify(rawData[0] || {});
+  let hash = 0;
+  const str = `${rowCount}_${colCount}_${sample}`;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0; // Convert to 32bit integer
+  }
+  return `ds_${Math.abs(hash)}`;
+}
+
+async function saveDatasetToSupabase(dataset: any) {
+  if (!supabase) return;
+  try {
+    const { error } = await supabase
+      .from('datasets')
+      .upsert({
+        id: dataset.id,
+        name: dataset.name,
+        description: dataset.description,
+        category: dataset.category,
+        row_count: dataset.rowCount,
+        column_count: dataset.columnCount,
+        columns: dataset.columns,
+        raw_data: dataset.rawData
+      });
+    if (error) {
+      console.warn('[Supabase Warning] Could not save dataset:', error.message);
+    }
+  } catch (err: any) {
+    console.warn('[Supabase Warning] Failed to upsert dataset:', err.message);
+  }
+}
+
+async function saveCleaningRunToSupabase(datasetId: string, config: any, report: any, cleanedData: any) {
+  if (!supabase) return;
+  try {
+    const { error } = await supabase
+      .from('cleaning_runs')
+      .insert({
+        dataset_id: datasetId,
+        config,
+        report,
+        cleaned_data: cleanedData
+      });
+    if (error) {
+      console.warn('[Supabase Warning] Could not save cleaning run:', error.message);
+    }
+  } catch (err: any) {
+    console.warn('[Supabase Warning] Failed to insert cleaning run:', err.message);
+  }
+}
+
+async function saveModelTrainingToSupabase(datasetId: string, config: any, evaluation: any) {
+  if (!supabase) return;
+  try {
+    const { error } = await supabase
+      .from('model_trainings')
+      .insert({
+        dataset_id: datasetId,
+        config,
+        evaluation
+      });
+    if (error) {
+      console.warn('[Supabase Warning] Could not save model training:', error.message);
+    }
+  } catch (err: any) {
+    console.warn('[Supabase Warning] Failed to insert model training:', err.message);
+  }
+}
+
+async function saveStrategicInsightsToSupabase(datasetId: string, insights: any) {
+  if (!supabase) return;
+  try {
+    const { error } = await supabase
+      .from('strategic_insights')
+      .insert({
+        dataset_id: datasetId,
+        insights
+      });
+    if (error) {
+      console.warn('[Supabase Warning] Could not save strategic insights:', error.message);
+    }
+  } catch (err: any) {
+    console.warn('[Supabase Warning] Failed to insert strategic insights:', err.message);
+  }
+}
 
 // ==========================================
 // DATA CLEANING PIPELINE ENGINE
@@ -509,13 +605,34 @@ function trainDecisionTree(
 // ==========================================
 
 // 1. Data Cleaning Endpoint
-app.post('/api/clean', (req, res) => {
+app.post('/api/clean', async (req, res) => {
   try {
     const { rawData, config } = req.body as CleanRequest;
     if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
       return res.status(400).json({ error: 'Invalid raw data.' });
     }
     const { cleanedData, report } = cleanData(rawData, config);
+    
+    // Save to Supabase (non-blocking)
+    const datasetId = getDatasetHash(rawData);
+    const cols = Object.keys(rawData[0] || {}).map(k => ({
+      name: k,
+      type: typeof rawData[0][k]
+    }));
+    
+    saveDatasetToSupabase({
+      id: datasetId,
+      name: `Dataset_${datasetId.substring(3, 8)}`,
+      description: 'Ingested raw dataset transaction',
+      category: 'Ingested',
+      rowCount: rawData.length,
+      columnCount: Object.keys(rawData[0] || {}).length,
+      columns: cols,
+      rawData: rawData
+    });
+    
+    saveCleaningRunToSupabase(datasetId, config, report, cleanedData);
+
     res.json({ cleanedData, report });
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Cleaning pipeline failed.' });
@@ -643,14 +760,19 @@ app.post('/api/train', (req, res) => {
     }
 
     const trainingTimeMs = Date.now() - startMs;
+    const evaluationResult = {
+      ...evaluation,
+      algorithm: algorithm.toUpperCase().replace('_', ' '),
+      targetColumn,
+      trainingTimeMs,
+    };
+
+    // Save to Supabase (non-blocking)
+    const datasetId = getDatasetHash(data);
+    saveModelTrainingToSupabase(datasetId, config, evaluationResult);
 
     res.json({
-      evaluation: {
-        ...evaluation,
-        algorithm: algorithm.toUpperCase().replace('_', ' '),
-        targetColumn,
-        trainingTimeMs,
-      },
+      evaluation: evaluationResult,
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Model training failed.' });
@@ -903,10 +1025,17 @@ function generateLocalInsights(datasetSummary: any, modelEvaluation: any) {
 }
 
 // 3. AI Insights & Decision-Making Recommendations Endpoint (Automated Locally)
-app.post('/api/ai/insights', (req, res) => {
+app.post('/api/ai/insights', async (req, res) => {
   try {
     const { datasetSummary, modelEvaluation } = req.body;
     const insights = generateLocalInsights(datasetSummary, modelEvaluation);
+
+    // Save to Supabase (non-blocking)
+    if (datasetSummary) {
+      const datasetId = `ins_${Date.now()}`;
+      saveStrategicInsightsToSupabase(datasetId, insights);
+    }
+
     res.json(insights);
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'AI Insights generation failed.' });
